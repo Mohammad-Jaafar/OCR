@@ -87,3 +87,4 @@ Honest limits of a 120-line scanner:
   or A4. Recovering it exactly needs the camera's focal length.
 - **Adaptive thresholding amplifies grain.** If `--mode bw` looks speckled, add a
   `cv2.medianBlur(gray, 3)` before the threshold, or use `--mode gray`.
+"# OCR" 
