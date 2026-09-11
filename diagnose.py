@@ -1,20 +1,11 @@
-"""
-diagnose.py -- "why didn't scan.py find my page?"
 
-scan.py either works or says "no 4-sided page found", which tells you nothing
-about WHY. This prints the five shapes it considered and shows which of the two
-tests each one failed, so you can see whether the problem is your photo or the
-settings.
-
-    python diagnose.py photo.jpg
-"""
 
 import sys
 
 import cv2
 import numpy as np
 
-import scan  # reuse WORK_HEIGHT so this always matches the real scanner
+import scan 
 
 
 def main():
@@ -28,7 +19,6 @@ def main():
     ratio = max(image.shape[0] / scan.WORK_HEIGHT, 1.0)
     small = cv2.resize(image, (int(image.shape[1] / ratio), int(image.shape[0] / ratio)))
 
-    # Exactly the steps find_page() runs.
     gray = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
     edges = cv2.Canny(cv2.GaussianBlur(gray, (5, 5), 0), 75, 200)
     edges = cv2.dilate(edges, np.ones((3, 3), np.uint8), iterations=1)
@@ -54,8 +44,6 @@ def main():
             verdict = "too small"
         else:
             verdict = "PAGE FOUND"
-            # NOT `winner = winner or approx` -- once winner holds an array,
-            # `or` tries to evaluate its truth value and numpy refuses.
             if winner is None:
                 winner = approx
 
