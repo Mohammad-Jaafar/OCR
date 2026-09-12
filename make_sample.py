@@ -1,14 +1,4 @@
-"""
-make_sample.py -- fake a "phone photo of a piece of paper" so you have something
-to test scan.py with straight away.
 
-It builds a clean page, then does the OPPOSITE of what scan.py does: it warps
-that flat page onto a tilted quadrilateral over a desk-ish background, and adds
-blur and noise. Reading this file is a decent way to convince yourself that a
-homography really is reversible.
-
-    python make_sample.py
-"""
 
 import os
 import sys
@@ -16,23 +6,21 @@ import sys
 import cv2
 import numpy as np
 
-PAGE_W, PAGE_H = 850, 1100      # a flat page, roughly US Letter proportions
-PHOTO_W, PHOTO_H = 1200, 1600   # the "photo" we output
+PAGE_W, PAGE_H = 850, 1100 
+PHOTO_W, PHOTO_H = 1200, 1600 
 
 
 def build_page():
-    """A white page with a title and some grey bars standing in for text."""
     page = np.full((PAGE_H, PAGE_W, 3), 250, dtype=np.uint8)
 
     cv2.putText(page, "QUARTERLY REPORT", (70, 130),
                 cv2.FONT_HERSHEY_SIMPLEX, 1.4, (30, 30, 30), 3, cv2.LINE_AA)
     cv2.line(page, (70, 165), (PAGE_W - 70, 165), (30, 30, 30), 2)
 
-    # Paragraphs: rows of grey bars, with a short bar ending each paragraph.
     rng = np.random.default_rng(7)
     y = 230
     for paragraph in range(6):
-        if y > PAGE_H - 320:   # leave room for the figure box below
+        if y > PAGE_H - 320:
             break
         for line in range(rng.integers(3, 7)):
             width = int(rng.integers(PAGE_W // 2, PAGE_W - 140))
@@ -59,8 +47,6 @@ def main():
     page = build_page()
     photo = build_background()
 
-    # The four corners the page will occupy in the photo: a tilted, tapered
-    # quad, the way paper looks when the camera is not square-on to it.
     source = np.array([[0, 0], [PAGE_W, 0], [PAGE_W, PAGE_H], [0, PAGE_H]],
                       dtype="float32")
     destination = np.array([[250, 190], [1010, 330], [880, 1440], [130, 1190]],
@@ -68,8 +54,6 @@ def main():
     M = cv2.getPerspectiveTransform(source, destination)
 
     warped_page = cv2.warpPerspective(page, M, (PHOTO_W, PHOTO_H))
-    # Warp a solid white rectangle the same way to get a mask of "where the
-    # page ended up", so we paste only the page and not the black corners.
     mask = cv2.warpPerspective(np.full((PAGE_H, PAGE_W), 255, np.uint8),
                                M, (PHOTO_W, PHOTO_H))
     photo[mask > 0] = warped_page[mask > 0]
